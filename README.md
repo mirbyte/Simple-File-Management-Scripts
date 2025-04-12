@@ -1,2 +1,2 @@
 # Simple-File-Management-Scripts
-Simple file management scripts for windows that I use daily for a variety of tasks.
+By default all the scripts use current directory as source.
