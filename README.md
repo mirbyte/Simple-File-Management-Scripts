@@ -2,7 +2,7 @@
 ![Size](https://img.shields.io/github/repo-size/mirbyte/Simple-File-Management-Scripts?label=size&color=ffcd42)
 [![Updated](https://img.shields.io/github/last-commit/mirbyte/Simple-File-Management-Scripts?color=ffcd42&label=updated)](https://github.com/mirbyte/Simple-File-Management-Scripts/commits/main)
 
-# Simple-File-Management-Scripts
+# Simple File Management Scripts
 Please read this README file very carefully to avoid any data losses. The scripts may vary in quality. I have made these for my own use and cannot guarantee their functionality for others. Please use with caution. By default all the scripts use current directory as source.
 
 
