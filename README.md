@@ -22,6 +22,8 @@ Please read this README file very carefully to avoid any data losses. The script
 - **windowsHOSTSlist_to_domainlist.py**: Extracts domain names from a Windows HOSTS file and saves them to a simple domain list file.
 
 
+<br>
+<br>
 
 
-
+*If you found this project useful, please drop a ⭐- it means a lot!*
