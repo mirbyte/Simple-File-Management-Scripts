@@ -5,10 +5,10 @@ import re
 import traceback
 
 
-# vibe coded with gemini
+# vibe coded with gemini, i didnt write a single line of code
 
 # --- Configuration ---
-API_KEY = "YOUR_API_KEY"  # <<< Replace with your Gemini API Key >>>
+API_KEY = "YOUR_API_KEY" # <<< Replace with your Gemini API Key >>>
 MUSIC_DIR = str(pathlib.Path.cwd())
 AUDIO_EXTENSIONS = ['.mp3', '.wav', '.flac', '.m4a']
 DRY_RUN = False # or True
@@ -85,7 +85,7 @@ def preprocess_mvsep_filename(filename_str):
         core_info = re.sub(r"-+", "-", processed_name).strip('-')
     else: 
         core_info = name_no_ext_initial
-        stem_match_original = re.match(r"^(.*?)\s*\((Vocals|Instrumental|Drums|Bass|Other|Full Mix|Karaoke|Piano|Guitar)\)$", core_info, re.IGNORECASE)
+        stem_match_original = re.match(r"^(.*?)\s*\((Vocals|Instrumental|Drums|Bass|Other|Karaoke|Piano|Guitar)\)$", core_info, re.IGNORECASE)
         if stem_match_original:
             core_info = stem_match_original.group(1).strip()
             found_stem_type = stem_match_original.group(2).capitalize()
@@ -105,7 +105,6 @@ def get_formatted_name_from_gemini(core_info_input, stem_type_input, original_fi
         - **Language Hint:** The Artist or Title is likely in **English or Finnish**.
         - **Finnish Diacritic Restoration:** If Finnish is identified or strongly suspected for any part of the Artist or Title:
             - Where an 'a' appears, consider if it should be an 'ä' (e.g., 'sa' might be 'sä').
-            - Where an 'o' appears, consider if it should be an 'ö' (e.g., 'korso' might be 'körsö').
           Please apply these specific restorations only if it makes strong linguistic sense for Finnish words. Be conservative with other diacritics.
     """
     feat_formatting_instruction = """
@@ -124,14 +123,14 @@ def get_formatted_name_from_gemini(core_info_input, stem_type_input, original_fi
         2. Ensure proper capitalization.
         {diacritic_instruction}
         {feat_formatting_instruction}
-        3. If a stem was detected from the original ("{detected_stem_str}" if not "Not explicitly detected"), use it. Otherwise, append "(Full Mix)".
-        4. Output as "Artist - Title (Stem)". If the artist is "Unknown Artist", still include it in this output; Python will handle removing it later if needed.
-        5. If input is already perfect (or only needs minor fixes covered above like diacritics, capitalization, "feat." period, or adding "(Full Mix)"), reply with "NO_CHANGE_NEEDED_AS_IS".
+        3. If a stem was detected from the original ("{detected_stem_str}" if not "Not explicitly detected"), use it. If no stem is detected, do not append any default stem.
+        4. Output as "Artist - Title (Stem)" if a stem is present, or "Artist - Title" if no stem is present. If the artist is "Unknown Artist", still include it in this output; Python will handle removing it later if needed.
+        5. If input is already perfect (or only needs minor fixes covered above like diacritics, capitalization, "feat." period), reply with "NO_CHANGE_NEEDED_AS_IS".
         6. If generic (e.g., "Track 01"), respond "UNKNOWN_FORMAT".
 
         Examples:
-        Input: "sa teet sen feat artisti", Detected Stem: "Not explicitly detected" -> Output: Sä Teet Sen feat. Artisti (Full Mix)
-        Input: "Artisti Esiintyjä - Biisin Nimi feat Toinen Artisti", Detected Stem: "Not explicitly detected" -> Output: Artisti Esiintyjä - Biisin Nimi feat. Toinen Artisti (Full Mix)
+        Input: "sa teet sen feat artisti", Detected Stem: "Not explicitly detected" -> Output: Sä Teet Sen feat. Artisti
+        Input: "Artisti Esiintyjä - Biisin Nimi feat Toinen Artisti", Detected Stem: "Not explicitly detected" -> Output: Artisti Esiintyjä - Biisin Nimi feat. Toinen Artisti
         Input: "Chance - Aspyer", Detected Stem: "Not explicitly detected" -> Output: NO_CHANGE_NEEDED_AS_IS
         Input: "My Song (vocals)", Detected Stem: "Vocals" -> Output: Unknown Artist - My Song (Vocals)
 
@@ -152,13 +151,14 @@ def get_formatted_name_from_gemini(core_info_input, stem_type_input, original_fi
         3. Capitalize appropriately.
         {diacritic_instruction}
         {feat_formatting_instruction}
-        4. Use "Detected Stem Type" or "Full Mix".
-        Format STRICTLY as: Artist - Title (Stem). If artist is "Unknown Artist", still include it here.
+        4. Use "Detected Stem Type" if available. If no stem is detected, do not append any default stem.
+        Format STRICTLY as: Artist - Title (Stem) if a stem is present, or Artist - Title if no stem is present. If artist is "Unknown Artist", still include it here.
         If "Core Information" is too garbled, respond "UNKNOWN_FORMAT".
 
         Examples:
         Input Core: "sa-teet-saman-muille-feat-mimosa" / Detected Stem: "Vocals" -> Output: Unknown Artist - Sä Teet Saman Muille feat. Mimosa (Vocals)
         Input Core: "artisti-esiintyja-laulun-nimi-feat-vierailija" / Detected Stem: "Other" -> Output: Artisti Esiintyjä - Laulun Nimi feat. Vierailija (Other)
+        Input Core: "kostonliekki-liekeissa" / Detected Stem: "Not explicitly detected" -> Output: Kostonliekki - Liekeissä
         Input Core: "kostonliekki-liekeissa" / Detected Stem: "Other" -> Output: Kostonliekki - Liekeissä (Other)
 
         Core Information: "{core_info_input}"
@@ -172,7 +172,9 @@ def get_formatted_name_from_gemini(core_info_input, stem_type_input, original_fi
         if response_text == "UNKNOWN_FORMAT" or not response_text: return None
         if response_text == "NO_CHANGE_NEEDED_AS_IS": return "NO_CHANGE_NEEDED_AS_IS"
         
-        if not re.match(r".+ - .+ \([^)]+\)$", response_text):
+        # Allow for responses with or without a stem in parentheses
+        # e.g., "Artist - Title (Stem)" or "Artist - Title"
+        if not re.match(r".+ - .+( \([^)]+\))?$", response_text):
             print(f"  WARNING: Gemini response for '{original_filename_for_context}' not in 'Artist - Title (Stem)' format: '{response_text}'. Treating as UNKNOWN_FORMAT.")
             return None
         return response_text
@@ -230,6 +232,53 @@ def rename_files_in_current_directory():
                 clean_new_name_base = re.sub(r'\b(ft)(?!\.)\b', r'ft.', clean_new_name_base, flags=re.IGNORECASE)
                 # Correct potential double dots (e.g., if original had "feat." and regex added another)
                 clean_new_name_base = clean_new_name_base.replace('feat..', 'feat.').replace('ft..', 'ft.')
+
+                # --- BEGIN: Handle "Extended Mix" formatting and positioning ---
+                original_stem_for_extended_mix_logic = ""
+                name_part_for_extended_mix = clean_new_name_base
+
+                # Try to identify and separate a stem tag like (Vocals), (Instrumental), etc.
+                # This regex looks for a parenthesized group at the very end of the string.
+                stem_match = re.search(r'\s*\(([^)]+)\)$', name_part_for_extended_mix)
+                
+                if stem_match:
+                    possible_stem_text = stem_match.group(1)
+                    # Common stem names (case-insensitive check later)
+                    known_stems_for_check = [
+                        "vocals", "instrumental", "drums", "bass", "other", 
+                        "karaoke", "piano", "guitar", "acapella", "lead", "backing" 
+                    ] 
+                    is_known_stem = any(known_stem.lower() == possible_stem_text.lower() for known_stem in known_stems_for_check)
+                    
+                    if is_known_stem:
+                        original_stem_for_extended_mix_logic = f" ({possible_stem_text})"
+                        name_part_for_extended_mix = name_part_for_extended_mix[:stem_match.start()].strip()
+
+                temp_name_for_em_processing = name_part_for_extended_mix
+                found_extended_mix_variant = False
+
+                extended_mix_removal_patterns = [
+                    re.compile(r'\s*\(extended\s+mix\)\s*', re.IGNORECASE), 
+                    re.compile(r'\bextended\s+mix\b', re.IGNORECASE)      
+                ]
+
+                for pattern in extended_mix_removal_patterns:
+                    if pattern.search(temp_name_for_em_processing):
+                        found_extended_mix_variant = True
+                        temp_name_for_em_processing = pattern.sub(' ', temp_name_for_em_processing)
+                
+                temp_name_for_em_processing = re.sub(r'\s+', ' ', temp_name_for_em_processing).strip()
+
+                if found_extended_mix_variant:
+                    name_part_for_extended_mix = f"{temp_name_for_em_processing} (Extended Mix)".strip()
+                else:
+                    name_part_for_extended_mix = temp_name_for_em_processing
+
+                clean_new_name_base = f"{name_part_for_extended_mix}{original_stem_for_extended_mix_logic}".strip()
+                clean_new_name_base = re.sub(r'\s+', ' ', clean_new_name_base).strip()
+                # --- END: Handle "Extended Mix" ---
+
+
                 # --- End Post-process ---
 
                 if not clean_new_name_base: # Check after stripping "Unknown Artist"
@@ -245,10 +294,7 @@ def rename_files_in_current_directory():
                     if new_filename_str.lower() == current_filename_str.lower():
                         print(f"  Skipped (already good): File '{current_filename_str}' confirmed by Gemini (case or identical).")
                         counts["skipped_no_change"] +=1; continue
-                    elif not '(' in current_file_path.stem and \
-                         clean_new_name_base.lower() == f"{current_file_path.stem.lower()} (full mix)":
-                        print(f"  Skipped (already good): Original '{current_filename_str}' became '{new_filename_str}' by adding (Full Mix).")
-                        counts["skipped_no_change"] +=1; continue
+
                 
                 if new_filename_str == current_filename_str: 
                     print(f"  Skipped (no change): Suggested name '{new_filename_str}' is identical to current.")
