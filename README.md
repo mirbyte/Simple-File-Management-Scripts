@@ -8,7 +8,7 @@ Please read this README file very carefully to avoid any data losses. The script
 
 ### Root Directory Scripts
 
-- **Album_Art_Applier**: Tool for mp3 & flac files.
+- **Album_Art_Applier.py**: Tool for mp3 & flac files.
 - **universal_prefix-suffix_remover.py**: Interactively removes a user-specified prefix or suffix from filenames.
 - **rename_mvsep_files.py**: Renames audio files downloaded from `mvsep.com` to a cleaner format like `Song Title (stem).mp3`. *Doesn't really work for now*
 - **rename_mvsep_files_with_AI.py**: Renames audio files downloaded from `mvsep.com` to a cleaner format like `Song Title (stem).mp3` with the help of Gemini API.
