@@ -10,7 +10,6 @@ Please read this README file very carefully to avoid any data losses. The script
 
 - **Album_Art_Applier.py**: Tool for `mp3` & `flac` files. Buggy as for now.
 - **universal_prefix-suffix_remover.py**: Interactively removes a user-specified prefix or suffix from filenames.
-- **rename_mvsep_files.py**: Renames audio files downloaded from `mvsep.com` to a cleaner format like `Song Title (stem).mp3`. *Doesn't really work for now*
 - **rename_mvsep_files_with_AI.py**: Renames audio files downloaded from `mvsep.com` to a cleaner format like `Song Title (stem).mp3` with the help of Gemini API.
 - **bulk image resizer (50%).bat**: Resizes all images 50% of their original size in currentdir.
 - **+_to_space_in_filenames.py**: Replaces one or more consecutive '+' characters in filenames with a single space. Ignores Python scripts.
