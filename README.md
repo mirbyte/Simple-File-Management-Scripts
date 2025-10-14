@@ -15,6 +15,7 @@ Please read this README file very carefully to avoid any data losses. The script
 - **fix_spaces_in_filenames.py**: Cleans filenames in the current directory by removing leading/trailing spaces, spaces before the file extension, and replacing multiple spaces with a single space.
 - **unzip_all_in_currentdir.py**: Finds and extracts all ZIP/RAR files within currentdir. Verifies extracted files and manages filename collisions.
 - **FastFolderRemover.exe**: Faster only if the target folder contains A LOT of small files. Very niche product. Asks for the full path of target folder.
+- **txt_file_splitter.py**: Interactively splits text files into multiple parts (2-20) with smart paragraph-aware splitting. Displays file statistics and ensures even distribution across parts.
 
 
 
