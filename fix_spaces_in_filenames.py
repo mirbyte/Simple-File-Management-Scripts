@@ -33,7 +33,6 @@ def rename_files_in_current_directory():
 
     # Get the directory where the script is running
     current_directory = os.getcwd()
-    script_name = os.path.basename(__file__) # Get the name of this script
 
     try:
         # List all items in the directory
@@ -41,16 +40,21 @@ def rename_files_in_current_directory():
             # Create the full path to the item
             item_path = os.path.join(current_directory, item_name)
 
-            # Check if it's a file and not the script itself
-            if os.path.isfile(item_path) and item_name != script_name:
+            # Check if it's a file and skip Python scripts
+            if os.path.isfile(item_path) and not item_name.lower().endswith('.py'):
                 # Get the potentially corrected name
                 corrected_name = fix_misplaced_spaces(item_name)
 
                 # Rename only if the name actually changes
                 if item_name != corrected_name:
+                    new_item_path = os.path.join(current_directory, corrected_name)
+
+                    # Prevent overwriting existing files
+                    if os.path.exists(new_item_path):
+                        errors_encountered.append(f"Target '{corrected_name}' already exists (from '{item_name}')")
+                        continue
+
                     try:
-                        # Create the full path for the new name
-                        new_item_path = os.path.join(current_directory, corrected_name)
                         # Perform the rename
                         os.rename(item_path, new_item_path)
                         files_renamed_count += 1

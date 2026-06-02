@@ -7,9 +7,6 @@ init()
 # github/mirbyte
 
 def print_log(message, status="INFO"):
-    if status == "INFO":
-        return
-
     timestamp = time.strftime("%H:%M:%S")
     status_colors = {
         "INFO": Fore.BLUE,
@@ -20,6 +17,8 @@ def print_log(message, status="INFO"):
     print(f"{status_colors[status]}[{status}][{timestamp}] {message}{Style.RESET_ALL}")
 
 def rename_files():
+    current_dir = os.getcwd()
+
     print("Choose what to remove:")
     print("1. Prefix (from start of filename)")
     print("2. Suffix (after filename)")
@@ -75,10 +74,16 @@ def rename_files():
             input("\nPress Enter to exit...")
             return
 
-    for filename in os.listdir():
+    for filename in os.listdir(current_dir):
+        file_path = os.path.join(current_dir, filename)
+
         # Skip directories and other non-file items
-        if not os.path.isfile(filename):
+        if not os.path.isfile(file_path):
             skipped_non_files += 1
+            continue
+
+        # Skip Python scripts to prevent self-renaming or breaking tools
+        if filename.lower().endswith('.py'):
             continue
 
         target = None
@@ -109,13 +114,14 @@ def rename_files():
                 target = name.rstrip() + ext
 
             files_processed += 1
-            if os.path.exists(target):
+            target_path = os.path.join(current_dir, target)
+            if os.path.exists(target_path):
                 print_log(f"Skipping {filename} → {target} (target exists)", "ERROR")
                 duplicates_found += 1
             else:
                 try:
                     if not dry_run:
-                        os.rename(filename, target)
+                        os.rename(file_path, target_path)
                     print_log(f"{'Would rename' if dry_run else 'Renamed'}: {filename} → {target}",
                               "SUCCESS" if not dry_run else "INFO")
                     files_renamed += 1
